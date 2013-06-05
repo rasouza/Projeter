@@ -1,1 +1,4 @@
+# SublimeText project files
+*.sublime*
+
 vendor/
