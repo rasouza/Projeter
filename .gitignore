@@ -1,4 +1,7 @@
 # SublimeText project files
 *.sublime*
 
+# Composer
+composer.lock
+
 vendor/
