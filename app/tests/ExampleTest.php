@@ -14,4 +14,9 @@ class ExampleTest extends TestCase {
 		$this->assertTrue($this->client->getResponse()->isOk());
 	}
 
+	public function textOtherExample()
+	{
+		$this->assertTrue(true);
+	}
+
 }

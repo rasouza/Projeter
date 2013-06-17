@@ -15,3 +15,10 @@ Route::get('/', function()
 {
 	return View::make('hello');
 });
+
+Route::any('ola/{usuario?}', function($usuario = 'Guest') {
+	return View::make('hello')->with('usuario', $usuario);
+});
+
+Route::get('marketing/target/add', 'TargetController@getAdd');
+Route::post('marketing/target/add', 'TargetController@postAdd');

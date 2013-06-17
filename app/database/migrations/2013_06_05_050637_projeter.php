@@ -12,10 +12,16 @@ class Projeter extends Migration {
 	public function up()
 	{
 		//
-		Schema::create('project', function($table) {
+		Schema::create('targets', function($table) {
 			$table->increments('id');
 			$table->string('name', 100);
 			$table->boolean('status')->default(FALSE);
+			$table->timestamps();
+		});
+
+		Schema::create('mailings', function($table) {
+			$table->integer('target_id');
+			$table->string('email', 200);
 		});
 	}
 
@@ -26,8 +32,8 @@ class Projeter extends Migration {
 	 */
 	public function down()
 	{
-		//
-		Schema::dropIfExists('project');
+		Schema::dropIfExists('targets');
+		Schema::dropIfExists('mailings');
 	}
 
 }

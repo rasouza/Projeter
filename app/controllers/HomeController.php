@@ -20,4 +20,9 @@ class HomeController extends BaseController {
 		return View::make('hello');
 	}
 
+	public function ola($usuario = null)
+    {
+        return View::make('ola')->with('usuario', $usuario);
+    }
+
 }
