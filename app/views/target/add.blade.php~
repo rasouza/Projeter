@@ -4,5 +4,5 @@
 	CRM
 @stop
 @section('page-description')
-	Create a new group for targeting the mailing lists
+	Create a new group for tergeting the mailing lists
 @stop

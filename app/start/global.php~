@@ -81,17 +81,3 @@ App::down(function()
 */
 
 require app_path().'/filters.php';
-
-/*
-|--------------------------------------------------------------------------
-| View Composers
-|--------------------------------------------------------------------------
-|
-| Include data that will be passed to all views
-|
-*/
-
-View::composer('layouts.default', function($view) 
-{
-	$view->with('user', 'Usuario_Teste');
-});

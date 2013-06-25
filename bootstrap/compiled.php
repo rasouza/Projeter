@@ -290,7 +290,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirect;
 class Application extends Container implements HttpKernelInterface, ResponsePreparerInterface
 {
-    const VERSION = '4.0.2';
+    const VERSION = '4.0.5';
     protected $booted = false;
     protected $bootingCallbacks = array();
     protected $bootedCallbacks = array();
@@ -334,7 +334,7 @@ class Application extends Container implements HttpKernelInterface, ResponsePrep
     }
     public static function getBootstrapFile()
     {
-        return '/home/rodrigo/Documents/Workspaces/TFCrown/vendor/laravel/framework/src/Illuminate/Foundation' . '/start.php';
+        return '/home/ralves/Documents/Workspaces/projeter/vendor/laravel/framework/src/Illuminate/Foundation' . '/start.php';
     }
     public function startExceptionHandling()
     {
@@ -553,7 +553,7 @@ class Application extends Container implements HttpKernelInterface, ResponsePrep
     {
         $this['exception']->error($callback);
     }
-    public function pushError(Closure $closure)
+    public function pushError(Closure $callback)
     {
         $this['exception']->pushError($callback);
     }
@@ -3066,7 +3066,7 @@ abstract class ServiceProvider
     }
     protected function getClassChain(ReflectionClass $reflect)
     {
-        $lastName = null;
+        $classes = array();
         while ($reflect !== false) {
             $classes[] = $reflect;
             $reflect = $reflect->getParentClass();
@@ -3926,7 +3926,7 @@ class Filesystem
     }
     public function lastModified($path)
     {
-        return filemtime(realpath($path));
+        return filemtime($path);
     }
     public function isDirectory($directory)
     {
@@ -3962,7 +3962,7 @@ class Filesystem
     {
         $directories = array();
         foreach (Finder::create()->in($directory)->directories()->depth(0) as $dir) {
-            $directories[] = $dir->getRealPath();
+            $directories[] = $dir->getPathname();
         }
         return $directories;
     }
@@ -3983,12 +3983,12 @@ class Filesystem
         foreach ($items as $item) {
             $target = $destination . '/' . $item->getBasename();
             if ($item->isDir()) {
-                $path = $item->getRealPath();
+                $path = $item->getPathname();
                 if (!$this->copyDirectory($path, $target, $options)) {
                     return false;
                 }
             } else {
-                if (!$this->copy($item->getRealPath(), $target)) {
+                if (!$this->copy($item->getPathname(), $target)) {
                     return false;
                 }
             }
@@ -4003,9 +4003,9 @@ class Filesystem
         $items = new FilesystemIterator($directory);
         foreach ($items as $item) {
             if ($item->isDir()) {
-                $this->deleteDirectory($item->getRealPath());
+                $this->deleteDirectory($item->getPathname());
             } else {
-                $this->delete($item->getRealPath());
+                $this->delete($item->getPathname());
             }
         }
         if (!$preserve) {
@@ -4251,8 +4251,7 @@ class SessionServiceProvider extends ServiceProvider
     }
     protected function registerSessionEvents()
     {
-        $app = $this->app;
-        $config = $app['config']['session'];
+        $config = $this->app['config']['session'];
         if (!is_null($config['driver'])) {
             $this->registerBootingEvent();
             $this->registerCloseEvent();
@@ -4260,8 +4259,7 @@ class SessionServiceProvider extends ServiceProvider
     }
     protected function registerBootingEvent()
     {
-        $app = $this->app;
-        $this->app->booting(function ($app) use($app) {
+        $this->app->booting(function ($app) {
             $app['session']->start();
         });
     }
@@ -4289,7 +4287,7 @@ class SessionServiceProvider extends ServiceProvider
     {
         $config = $this->app['config']['session'];
         $expire = $this->getExpireTime($config);
-        setcookie($config['cookie'], session_id(), $expire, $config['path'], $config['domain']);
+        setcookie($config['cookie'], session_id(), $expire, $config['path'], $config['domain'], false, true);
     }
     protected function getExpireTime($config)
     {
@@ -5379,6 +5377,10 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
         $model->save();
         return $model;
     }
+    public static function query()
+    {
+        return with(new static())->newQuery();
+    }
     public static function on($connection = null)
     {
         $instance = new static();
@@ -5529,7 +5531,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
     {
         $query = $this->newQuery()->where($this->getKeyName(), $this->getKey());
         if ($this->softDelete) {
-            $query->update(array(static::DELETED_AT => new DateTime()));
+            $query->update(array(static::DELETED_AT => $this->freshTimestamp()));
         } else {
             $query->delete();
         }
@@ -5944,7 +5946,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
     }
     public function attributesToArray()
     {
-        $attributes = $this->getAccessibleAttributes();
+        $attributes = $this->getArrayableAttributes();
         foreach ($this->getMutatedAttributes() as $key) {
             if (!array_key_exists($key, $attributes)) {
                 continue;
@@ -5953,7 +5955,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
         }
         return $attributes;
     }
-    protected function getAccessibleAttributes()
+    protected function getArrayableAttributes()
     {
         if (count($this->visible) > 0) {
             return array_intersect_key($this->attributes, array_flip($this->visible));
@@ -6111,6 +6113,10 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
             }
         }
         return $dirty;
+    }
+    public function getRelations()
+    {
+        return $this->relations;
     }
     public function getRelation($relation)
     {
@@ -6412,7 +6418,7 @@ class Store extends SymfonySession
     {
         return array_get($this->all(), $name, $default);
     }
-    public function hasOldInput($key)
+    public function hasOldInput($key = null)
     {
         return !is_null($this->getOldInput($key));
     }
@@ -8417,6 +8423,11 @@ class MessageBag implements ArrayableInterface, Countable, JsonableInterface, Me
     public function setFormat($format = ':message')
     {
         $this->format = $format;
+        return $this;
+    }
+    public function isEmpty()
+    {
+        return !$this->any();
     }
     public function any()
     {
@@ -9939,7 +9950,7 @@ class PrettyPageHandler extends Handler
             return Handler::DONE;
         }
         if (!($resources = $this->getResourcesPath())) {
-            $resources = '/home/rodrigo/Documents/Workspaces/TFCrown/vendor/filp/whoops/src/Whoops/Handler' . '/../Resources';
+            $resources = '/home/ralves/Documents/Workspaces/projeter/vendor/filp/whoops/src/Whoops/Handler' . '/../Resources';
         }
         $templateFile = "{$resources}/pretty-template.php";
         $cssFile = "{$resources}/pretty-page.css";
