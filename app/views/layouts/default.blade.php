@@ -105,11 +105,11 @@
     
     <ul id="menu" class="nav">
 	@section('left-navigation')
-        <li class="dash"><a href="#" title=""><span>Home</span></a></li>
+        <li class="dash"><a href="{{ URL::action('HomeController@showWelcome') }}" title=""><span>Home</span></a></li>
         <li class="charts"><a href="#" title=""  class="exp"><span>Marketing</span></a>
             <ul class="sub">
                 <li><a href="#" title="">Newsletters</a></li>
-                <li class="last"><a href="#" title="">CRM</a></li>
+                <li class="last"><a href="{{ URL::action('Marketing_TargetController@index') }}" title="">CRM</a></li>
             </ul>
         </li>
         <li class="charts"><a href="#" title=""><span>Operacional</span></a></li>

@@ -11,14 +11,8 @@
 |
 */
 
-Route::get('/', function()
-{
-	return View::make('hello');
-});
+Route::get('/', 'HomeController@showWelcome');
 
-Route::any('ola/{usuario?}', function($usuario = 'Guest') {
-	return View::make('hello')->with('usuario', $usuario);
-});
-
-Route::get('marketing/target/add', 'TargetController@getAdd');
-Route::post('marketing/target/add', 'TargetController@postAdd');
+Route::group(array('prefix' => 'marketing'), function() {
+	Route::resource('target', 'Marketing_TargetController');
+}); 
