@@ -15,7 +15,7 @@ class Projeter extends Migration {
 		Schema::create('targets', function($table) {
 			$table->increments('id');
 			$table->string('name', 100);
-			$table->boolean('status')->default(FALSE);
+			$table->softDeletes();
 			$table->timestamps();
 		});
 

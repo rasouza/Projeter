@@ -67,7 +67,7 @@
 
 <!-- Left side content -->
 <div id="leftSide">
-    <div class="logo"><a href="#"><img src="{{ URL::asset('images/logo.png')}}" alt="" /></a></div>
+    <div class="logo"><a href="{{ URL::action('HomeController@showWelcome') }}"><img src="{{ URL::asset('images/logo.png')}}" alt="" /></a></div>
     
     <div class="sidebarSep mt0"></div>
     
@@ -105,15 +105,14 @@
     
     <ul id="menu" class="nav">
 	@section('left-navigation')
-        <li class="dash"><a href="{{ URL::action('HomeController@showWelcome') }}" title=""><span>Home</span></a></li>
-        <li class="charts"><a href="#" title=""  class="exp"><span>Marketing</span></a>
+        <li class="users"><a href="#" title=""  class="exp"><span>Marketing</span></a>
             <ul class="sub">
                 <li><a href="#" title="">Newsletters</a></li>
                 <li class="last"><a href="{{ URL::action('Marketing_TargetController@index') }}" title="">CRM</a></li>
             </ul>
         </li>
-        <li class="charts"><a href="#" title=""><span>Operacional</span></a></li>
-        <li class="charts"><a href="#" title=""><span>Comercial</span></a></li>
+        <li class="building"><a href="#" title=""><span>Operacional</span></a></li>
+        <li class="cart"><a href="#" title=""><span>Comercial</span></a></li>
         <li class="dash"><a href="http://demo.kopyov.com/crown/" title="" target="_blank"><span>DEMO</span></a></li>
 	@show
     </ul>

@@ -1,5 +1,9 @@
 @extends('layouts.default')
 
+@section('page-title')
+    HOME
+@stop
+
 @section('title-area')
 <div class="titleArea">
     <div class="wrapper">

@@ -8,7 +8,17 @@ class Marketing_TargetController extends \BaseController {
 	 */
 	public function index()
 	{
-		return View::make('target.index');
+		return View::make('marketing.target.index');
+	}
+
+	/**
+	 * Display form to create a new resource
+	 *
+	 * @return Response
+	 */
+	public function create()
+	{
+		return View::make('marketing.target.create');
 	}
 
 	/**
