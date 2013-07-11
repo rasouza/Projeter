@@ -12,7 +12,7 @@
 @stop
 
 @section('content')
-	<form id="validate" class="form" method="post" action="">
+	{{ Form::open(array('id' => 'validate', 'action' => 'Marketing_TargetController@store', 'file' => true, 'class' => 'form')) }}
         <fieldset>
             <div class="widget">
                 <div class="title"><img src="{{ URL::asset('images/icons/dark/list.png') }}" alt="" class="titleIcon" /><h6>Target Info</h6></div>
@@ -25,7 +25,7 @@
                 <div class="formRow">
                     <label>Upload CSV</label>
                     <div class="formRight">
-                    	<input type="file" id="file" name="file" />
+                    	<input type="file" id="file" name="mailing" />
                     </div><div class="clear"></div>
                 </div>
 
@@ -105,5 +105,5 @@
             </div>
         </fieldset>
         
-    </form>
+    {{ Form::	close() }}
 @stop
