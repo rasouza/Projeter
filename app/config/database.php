@@ -54,10 +54,10 @@ return array(
 
 		'mysql' => array(
 			'driver'    => 'mysql',
-			'host'      => 'localhost',
-			'database'  => 'projeter',
-			'username'  => 'root',
-			'password'  => 'root',
+			'host'      => 'mysql.rasouza.com.br',
+			'database'  => 'rasouza01',
+			'username'  => 'rasouza01',
+			'password'  => 'dbzhpg123',
 			'charset'   => 'utf8',
 			'collation' => 'utf8_unicode_ci',
 			'prefix'    => '',
