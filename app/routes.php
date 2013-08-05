@@ -15,4 +15,8 @@ Route::get('/', 'HomeController@showWelcome');
 
 Route::group(array('prefix' => 'marketing'), function() {
 	Route::resource('target', 'Marketing_TargetController');
+});
+
+Route::group(array('prefix' => 'operacional'), function() {
+	Route::resource('chargerun', 'Operacional_ChargerunController');
 }); 

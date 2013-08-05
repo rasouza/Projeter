@@ -25,8 +25,7 @@ class ClassLoader
     public static function register()
     {
         if (!static::$registered) {
-            spl_autoload_register(array('\\Illuminate\\Support\\ClassLoader', 'load'));
-            static::$registered = true;
+            static::$registered = spl_autoload_register(array('\\Illuminate\\Support\\ClassLoader', 'load'));
         }
     }
     public static function addDirectories($directories)
@@ -298,6 +297,7 @@ class Application extends Container implements HttpKernelInterface, ResponsePrep
     protected $serviceProviders = array();
     protected $loadedProviders = array();
     protected $deferredServices = array();
+    protected static $requestClass = 'Illuminate\\Http\\Request';
     public function __construct(Request $request = null)
     {
         $this['request'] = $this->createRequest($request);
@@ -307,12 +307,13 @@ class Application extends Container implements HttpKernelInterface, ResponsePrep
     }
     protected function createRequest(Request $request = null)
     {
-        return $request ?: Request::createFromGlobals();
+        return $request ?: static::onRequest('createFromGlobals');
     }
     public function setRequestForConsoleEnvironment()
     {
         $url = $this['config']->get('app.url', 'http://localhost');
-        $this->instance('request', Request::create($url, 'GET', array(), array(), array(), $_SERVER));
+        $parameters = array($url, 'GET', array(), array(), array(), $_SERVER);
+        $this->instance('request', static::onRequest('create', $parameters));
     }
     public function redirectIfTrailingSlash()
     {
@@ -334,7 +335,7 @@ class Application extends Container implements HttpKernelInterface, ResponsePrep
     }
     public static function getBootstrapFile()
     {
-        return '/home/ralves/Documents/Workspaces/projeter/vendor/laravel/framework/src/Illuminate/Foundation' . '/start.php';
+        return '/home/ralves/Documents/Workspace/projeter/vendor/laravel/framework/src/Illuminate/Foundation' . '/start.php';
     }
     public function startExceptionHandling()
     {
@@ -585,6 +586,17 @@ class Application extends Container implements HttpKernelInterface, ResponsePrep
     public function setDeferredServices(array $services)
     {
         $this->deferredServices = $services;
+    }
+    public static function requestClass($class = null)
+    {
+        if (!is_null($class)) {
+            static::$requestClass = $class;
+        }
+        return static::$requestClass;
+    }
+    public static function onRequest($method, $parameters = array())
+    {
+        return forward_static_call_array(array(static::requestClass(), $method), $parameters);
     }
     public function __get($key)
     {
@@ -2152,7 +2164,16 @@ class NativeSessionStorage implements SessionStorageInterface
         if ($destroy) {
             $this->metadataBag->stampNew();
         }
-        return session_regenerate_id($destroy);
+        $ret = session_regenerate_id($destroy);
+        session_write_close();
+        if (isset($_SESSION)) {
+            $backup = $_SESSION;
+            session_start();
+            $_SESSION = $backup;
+        } else {
+            session_start();
+        }
+        return $ret;
     }
     public function save()
     {
@@ -3080,9 +3101,9 @@ abstract class ServiceProvider
         }
         return $namespace;
     }
-    public function commands()
+    public function commands($commands)
     {
-        $commands = func_get_args();
+        $commands = is_array($commands) ? $commands : func_get_args();
         $events = $this->app['events'];
         $events->listen('artisan.start', function ($artisan) use($commands) {
             $artisan->resolveCommands($commands);
@@ -3397,6 +3418,10 @@ class Str
         }
         return rtrim($matches[0]) . $end;
     }
+    public static function parseCallback($callback, $default)
+    {
+        return static::contains($callback, '@') ? explode('@', $callback, 2) : array($callback, $default);
+    }
     public static function plural($value, $count = 2)
     {
         return Pluralizer::plural($value, $count);
@@ -3432,9 +3457,9 @@ class Str
     public static function slug($title, $separator = '-')
     {
         $title = static::ascii($title);
-        $title = preg_replace('![^' . preg_quote($separator) . '\\pL\\pN\\s]+!u', '', mb_strtolower($title));
         $flip = $separator == '-' ? '_' : '-';
         $title = preg_replace('![' . preg_quote($flip) . ']+!u', $separator, $title);
+        $title = preg_replace('![^' . preg_quote($separator) . '\\pL\\pN\\s]+!u', '', mb_strtolower($title));
         $title = preg_replace('![' . preg_quote($separator) . '\\s]+!u', $separator, $title);
         return trim($title, $separator);
     }
@@ -5167,7 +5192,7 @@ class Dispatcher
     }
     protected function setupWildcardListen($event, $listener, $priority)
     {
-        $this->wildcards[$event][] = $listener;
+        $this->wildcards[$event][] = $this->makeListener($listener);
     }
     public function hasListeners($eventName)
     {
@@ -5531,7 +5556,8 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
     {
         $query = $this->newQuery()->where($this->getKeyName(), $this->getKey());
         if ($this->softDelete) {
-            $query->update(array(static::DELETED_AT => $this->freshTimestamp()));
+            $this->{static::DELETED_AT} = $time = $this->freshTimestamp();
+            $query->update(array(static::DELETED_AT => $time));
         } else {
             $query->delete();
         }
@@ -5805,7 +5831,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
         if (isset($this->table)) {
             return $this->table;
         }
-        return str_replace('\\', '', snake_case(str_plural(get_class($this))));
+        return str_replace('\\', '', snake_case(str_plural(class_basename($this))));
     }
     public function setTable($table)
     {
@@ -5957,15 +5983,12 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
     }
     protected function getArrayableAttributes()
     {
-        if (count($this->visible) > 0) {
-            return array_intersect_key($this->attributes, array_flip($this->visible));
-        }
-        return array_diff_key($this->attributes, array_flip($this->hidden));
+        return $this->getArrayableItems($this->attributes);
     }
     public function relationsToArray()
     {
         $attributes = array();
-        foreach ($this->relations as $key => $value) {
+        foreach ($this->getArrayableRelations() as $key => $value) {
             if (in_array($key, $this->hidden)) {
                 continue;
             }
@@ -5982,6 +6005,17 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
             }
         }
         return $attributes;
+    }
+    protected function getArrayableRelations()
+    {
+        return $this->getArrayableItems($this->relations);
+    }
+    protected function getArrayableItems(array $values)
+    {
+        if (count($this->visible) > 0) {
+            return array_intersect_key($values, array_flip($this->visible));
+        }
+        return array_diff_key($values, array_flip($this->hidden));
     }
     public function getAttribute($key)
     {
@@ -6143,6 +6177,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
     public function setConnection($name)
     {
         $this->connection = $name;
+        return $this;
     }
     public static function resolveConnection($connection = null)
     {
@@ -7944,7 +7979,7 @@ class Route extends BaseRoute
     }
     public function setBeforeFilters($value)
     {
-        $filters = is_string($value) ? explode('|', $value) : (array) $value;
+        $filters = $this->parseFilterValue($value);
         $this->setOption('_before', array_merge($this->getBeforeFilters(), $filters));
     }
     public function getAfterFilters()
@@ -7953,8 +7988,16 @@ class Route extends BaseRoute
     }
     public function setAfterFilters($value)
     {
-        $filters = is_string($value) ? explode('|', $value) : (array) $value;
+        $filters = $this->parseFilterValue($value);
         $this->setOption('_after', array_merge($this->getAfterFilters(), $filters));
+    }
+    protected function parseFilterValue($value)
+    {
+        $results = array();
+        foreach ((array) $value as $filters) {
+            $results = array_merge($results, explode('|', $filters));
+        }
+        return $results;
     }
     public function setParameters($parameters)
     {
@@ -8118,7 +8161,8 @@ class Environment
     {
         $path = $this->finder->find($view);
         $data = array_merge($mergeData, $this->parseData($data));
-        return new View($this, $this->getEngineFromPath($path), $view, $path, $data);
+        $this->callCreator($view = new View($this, $this->getEngineFromPath($path), $view, $path, $data));
+        return $view;
     }
     protected function parseData($data)
     {
@@ -8179,46 +8223,63 @@ class Environment
             $this->share($innerKey, $innerValue);
         }
     }
+    public function creator($views, $callback)
+    {
+        $creators = array();
+        foreach ((array) $views as $view) {
+            $creators[] = $this->addViewEvent($view, $callback, 'creating: ');
+        }
+        return $creators;
+    }
     public function composer($views, $callback)
     {
         $composers = array();
         foreach ((array) $views as $view) {
-            $composers[] = $this->addComposer($view, $callback);
+            $composers[] = $this->addViewEvent($view, $callback);
         }
         return $composers;
     }
-    protected function addComposer($view, $callback)
+    protected function addViewEvent($view, $callback, $prefix = 'composing: ')
     {
         if ($callback instanceof Closure) {
-            $this->events->listen('composing: ' . $view, $callback);
+            $this->events->listen($prefix . $view, $callback);
             return $callback;
         } elseif (is_string($callback)) {
-            return $this->addClassComposer($view, $callback);
+            return $this->addClassEvent($view, $callback, $prefix);
         }
     }
-    protected function addClassComposer($view, $class)
+    protected function addClassEvent($view, $class, $prefix)
     {
-        $name = 'composing: ' . $view;
-        $callback = $this->buildClassComposerCallback($class);
+        $name = $prefix . $view;
+        $callback = $this->buildClassEventCallback($class, $prefix);
         $this->events->listen($name, $callback);
         return $callback;
     }
-    protected function buildClassComposerCallback($class)
+    protected function buildClassEventCallback($class, $prefix)
     {
         $container = $this->container;
-        list($class, $method) = $this->parseClassComposer($class);
+        list($class, $method) = $this->parseClassEvent($class, $prefix);
         return function () use($class, $method, $container) {
             $callable = array($container->make($class), $method);
             return call_user_func_array($callable, func_get_args());
         };
     }
-    protected function parseClassComposer($class)
+    protected function parseClassEvent($class, $prefix)
     {
-        return str_contains($class, '@') ? explode('@', $class) : array($class, 'compose');
+        if (str_contains($class, '@')) {
+            return explode('@', $class);
+        } else {
+            $method = str_contains($prefix, 'composing') ? 'compose' : 'create';
+            return array($class, $method);
+        }
     }
     public function callComposer(View $view)
     {
         $this->events->fire('composing: ' . $view->getName(), array($view));
+    }
+    public function callCreator(View $view)
+    {
+        $this->events->fire('creating: ' . $view->getName(), array($view));
     }
     public function startSection($section, $content = '')
     {
@@ -8255,9 +8316,9 @@ class Environment
             $this->sections[$section] = $content;
         }
     }
-    public function yieldContent($section)
+    public function yieldContent($section, $default = '')
     {
-        return isset($this->sections[$section]) ? $this->sections[$section] : '';
+        return isset($this->sections[$section]) ? $this->sections[$section] : $default;
     }
     public function flushSections()
     {
@@ -8308,6 +8369,10 @@ class Environment
     public function getDispatcher()
     {
         return $this->events;
+    }
+    public function setDispatcher(Dispatcher $events)
+    {
+        $this->events = $events;
     }
     public function getContainer()
     {
@@ -8962,7 +9027,7 @@ class View implements ArrayAccess, Renderable
     {
         return array_key_exists($key, $this->data);
     }
-    public function offsetGet($key)
+    public function &offsetGet($key)
     {
         return $this->data[$key];
     }
@@ -8974,7 +9039,7 @@ class View implements ArrayAccess, Renderable
     {
         unset($this->data[$key]);
     }
-    public function __get($key)
+    public function &__get($key)
     {
         return $this->data[$key];
     }
@@ -9851,15 +9916,18 @@ class Run
             }
         }
         $output = ob_get_clean();
-        if ($this->allowQuit()) {
-            echo $output;
-            die;
-        } else {
-            if ($this->writeToOutput()) {
-                echo $output;
+        if ($this->writeToOutput()) {
+            if ($handlerResponse == Handler::QUIT && $this->allowQuit()) {
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
             }
-            return $output;
+            echo $output;
         }
+        if ($handlerResponse == Handler::QUIT && $this->allowQuit()) {
+            die;
+        }
+        return $output;
     }
     public function handleError($level, $message, $file = null, $line = null)
     {
@@ -9950,7 +10018,7 @@ class PrettyPageHandler extends Handler
             return Handler::DONE;
         }
         if (!($resources = $this->getResourcesPath())) {
-            $resources = '/home/ralves/Documents/Workspaces/projeter/vendor/filp/whoops/src/Whoops/Handler' . '/../Resources';
+            $resources = '/home/ralves/Documents/Workspace/projeter/vendor/filp/whoops/src/Whoops/Handler' . '/../Resources';
         }
         $templateFile = "{$resources}/pretty-template.php";
         $cssFile = "{$resources}/pretty-page.css";

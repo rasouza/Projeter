@@ -111,7 +111,11 @@
                 <li class="last"><a href="{{ URL::action('Marketing_TargetController@index') }}" title="">CRM</a></li>
             </ul>
         </li>
-        <li class="building"><a href="#" title=""><span>Operacional</span></a></li>
+        <li class="building"><a href="#" title=""><span>Operacional</span></a>
+            <ul class="sub">
+                <li class="last"><a href="{{ URL::action('Operacional_ChargerunController@index') }}" title="">Chargerun</a></li>
+            </ul>
+        </li>
         <li class="cart"><a href="#" title=""><span>Comercial</span></a></li>
         <li class="dash"><a href="http://demo.kopyov.com/crown/" title="" target="_blank"><span>DEMO</span></a></li>
 	@show
