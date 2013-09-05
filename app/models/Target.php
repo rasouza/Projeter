@@ -25,7 +25,7 @@ class Target extends Eloquent {
 			$mailing = new Mailing();
 			$mailing->target()->associate($this);
 			$mailing->email = $data['Email'];
-			//$mailing->save();
+			$mailing->save();
 		}
 
 		
