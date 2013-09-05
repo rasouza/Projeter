@@ -12,7 +12,10 @@
 @stop
 
 @section('content')
-	{{ Form::open(array('id' => 'validate', 'action' => 'Marketing_TargetController@store', 'file' => true, 'class' => 'form')) }}
+	@foreach($errors->all() as $error)
+		{{ $error }}
+	@endforeach
+	{{ Form::open(array('id' => 'validate', 'action' => 'TargetController@store', 'files' => true, 'class' => 'form')) }}
         <fieldset>
             <div class="widget">
                 <div class="title"><img src="{{ URL::asset('images/icons/dark/list.png') }}" alt="" class="titleIcon" /><h6>Target Info</h6></div>

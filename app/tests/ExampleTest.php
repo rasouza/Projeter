@@ -5,11 +5,12 @@ class ExampleTest extends TestCase {
 	/**
 	 * A basic functional test example.
 	 *
-	 * @return void
+	 * @data void
 	 */
 	public function testBasicExample()
 	{
-		
+		$target = new Target();
+		$target->importCSV('shipping.csv');
 	}
 
 }

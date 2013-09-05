@@ -19,9 +19,9 @@ Route::get('/teste', function() {
 });
 
 Route::group(array('prefix' => 'marketing'), function() {
-	Route::resource('target', 'Marketing_TargetController');
+	Route::resource('target', 'TargetController');
 });
 
 Route::group(array('prefix' => 'operacional'), function() {
-	Route::resource('chargerun', 'Operacional_ChargerunController');
+	Route::resource('chargerun', 'ChargerunController');
 }); 

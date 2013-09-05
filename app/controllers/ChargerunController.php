@@ -1,6 +1,6 @@
 <?php
 
-class Operacional_ChargerunController extends \BaseController {
+class ChargerunController extends BaseController {
 
 	/**
 	 * Display a listing of the resource.

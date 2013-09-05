@@ -1,5 +1,5 @@
 <?php
-class Marketing_TargetController extends \BaseController {
+class TargetController extends BaseController {
 
 	/**
 	 * Display a listing of the Targets.
@@ -18,6 +18,7 @@ class Marketing_TargetController extends \BaseController {
 	 */
 	public function create()
 	{
+		
 		return View::make('marketing.target.create');
 	}
 
@@ -28,19 +29,21 @@ class Marketing_TargetController extends \BaseController {
 	 */
 	public function store()
 	{
-		$rules = array('mailing' => 'mime:csv');
+		$rules = array('mailing' => 'required');
 		$validator = Validator::make(Input::all(), $rules);
 
 		if ($validator ->fails())
 		{
-			return Redirect::action('Marketing_TargetController@create')->withErrors($validator);
+			return Redirect::action('TargetController@create')->withErrors($validator);
 		} else {
 			$target = new Target();
 			$target->name = Input::get('name');
-			$target->save();
+			//$target->save();
 			$target->importCSV(Input::file('mailing'));
-
-			return View::make('marketing.target.index')->with('success', true);
+			
+			return View::make('marketing.target.index')
+				->with('success', true)
+				->with('cont', $target->cont);
 		}
 	}
 
