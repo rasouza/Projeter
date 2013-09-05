@@ -25,11 +25,11 @@
                 <div class="formRow">
                     <label>Upload CSV</label>
                     <div class="formRight">
-                    	<input type="file" id="file" name="mailing" />
+                    	{{ Form::file('mailing', array('id' => 'file')) }}
                     </div><div class="clear"></div>
                 </div>
 
-                <div class="formSubmit"><input type="submit" value="submit" class="blackB" /></div>
+                <div class="formSubmit"><input type="submit" value="criar" class="blackB" /></div>
                 <div class="clear"></div>
             </div>
         </fieldset>

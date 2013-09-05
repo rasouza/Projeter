@@ -22,6 +22,7 @@ class Projeter extends Migration {
 		Schema::create('mailings', function($table) {
 			$table->integer('target_id');
 			$table->string('email', 200);
+
 		});
 	}
 

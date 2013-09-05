@@ -13,6 +13,11 @@
 
 Route::get('/', 'HomeController@showWelcome');
 
+Route::get('/teste', function() {
+	$parseCSV = new parseCSV();
+	print_r($parseCSV);
+});
+
 Route::group(array('prefix' => 'marketing'), function() {
 	Route::resource('target', 'Marketing_TargetController');
 });

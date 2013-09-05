@@ -2,7 +2,7 @@
 class Marketing_TargetController extends \BaseController {
 
 	/**
-	 * Display a listing of the resource.
+	 * Display a listing of the Targets.
 	 *
 	 * @return Response
 	 */
@@ -12,7 +12,7 @@ class Marketing_TargetController extends \BaseController {
 	}
 
 	/**
-	 * Display form to create a new resource
+	 * Display form to create a new mailing
 	 *
 	 * @return Response
 	 */
@@ -22,13 +22,26 @@ class Marketing_TargetController extends \BaseController {
 	}
 
 	/**
-	 * Store a newly created resource in storage.
+	 * Store the mailing in database
 	 *
 	 * @return Response
 	 */
 	public function store()
 	{
-		//
+		$rules = array('mailing' => 'mime:csv');
+		$validator = Validator::make(Input::all(), $rules);
+
+		if ($validator ->fails())
+		{
+			return Redirect::action('Marketing_TargetController@create')->withErrors($validator);
+		} else {
+			$target = new Target();
+			$target->name = Input::get('name');
+			$target->save();
+			$target->importCSV(Input::file('mailing'));
+
+			return View::make('marketing.target.index')->with('success', true);
+		}
 	}
 
 	/**
