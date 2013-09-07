@@ -26,7 +26,7 @@ return array(
 	|
 	*/
 
-	'url' => 'http://labs.rasouza.com.br/projeter',
+	'url' => 'http://projeter.labs.rasouza.com.br',
 
 	/*
 	|--------------------------------------------------------------------------
