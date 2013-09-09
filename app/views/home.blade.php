@@ -5,5 +5,5 @@
 @stop
 
 @section('content')
-    {{ App::environment() }}
+    ENV = {{ App::environment() }}
 @stop
