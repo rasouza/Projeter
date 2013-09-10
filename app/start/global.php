@@ -84,6 +84,18 @@ require app_path().'/filters.php';
 
 /*
 |--------------------------------------------------------------------------
+| Require Queues File
+|--------------------------------------------------------------------------
+|
+| Load all Queues classes used in Projeter:
+|	ImportCSV -> Imports all mailing lists by Target model
+|
+*/
+
+require app_path().'/queues.php';
+
+/*
+|--------------------------------------------------------------------------
 | View Composers
 |--------------------------------------------------------------------------
 |
@@ -95,3 +107,4 @@ View::composer('layouts.default', function($view)
 {
 	$view->with('user', 'Usuario_Teste');
 });
+

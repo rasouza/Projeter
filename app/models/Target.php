@@ -30,4 +30,9 @@ class Target extends Eloquent {
 
 		
 	}
+
+	public function test()
+	{
+		Queue::push('ImportCSV', array('message' => 'Importando csv'));
+	}
 }

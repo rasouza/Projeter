@@ -38,9 +38,9 @@ class TargetController extends BaseController {
 		} else {
 			$target = new Target();
 			$target->name = Input::get('name');
-			$target->save();
-			$target->importCSV(Input::file('mailing'));
-			
+			//$target->save();
+			//$target->importCSV(Input::file('mailing'));
+			$target->test();
 			return View::make('marketing.target.index')
 				->with('success', true)
 				->with('cont', $target->cont);
