@@ -7,6 +7,7 @@ Project manager for recurring and usual bussiness processes
 
 ## Instructions
 Run
+
     sudo apt-get install beanstalkd
     composer install
     beanstalkd &
