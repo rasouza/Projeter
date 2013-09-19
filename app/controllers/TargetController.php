@@ -33,14 +33,12 @@ class TargetController extends BaseController {
 		$validator = Validator::make(Input::all(), $rules);
 
 		if ($validator ->fails())
-		{
 			return Redirect::action('TargetController@create')->withErrors($validator);
-		} else {
+		
+		else {
 			$target = new Target();
-			$target->name = Input::get('name');
-			//$target->save();
-			//$target->importCSV(Input::file('mailing'));
-			$target->test();
+			$target->importCSV(Input::get('name'), Input::file('mailing'));
+
 			return View::make('marketing.target.index')
 				->with('success', true)
 				->with('cont', $target->cont);

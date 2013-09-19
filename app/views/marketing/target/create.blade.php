@@ -13,7 +13,9 @@
 
 @section('content')
 	@foreach($errors->all() as $error)
-		{{ $error }}
+		<div class="nNote nFailure hideit">
+            <p><strong>ERROR: </strong>{{ $error }}</p>
+        </div>
 	@endforeach
 	{{ Form::open(array('id' => 'validate', 'action' => 'TargetController@store', 'files' => true, 'class' => 'form')) }}
         <fieldset>
