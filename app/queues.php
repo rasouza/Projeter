@@ -17,7 +17,7 @@ class ImportCSV
 
 		$reader = new \EasyCSV\Reader($file);
 
-		Log::info("Reading {$file} (file_exists: " . file_exists($file) . ")";
+		Log::info("Reading {$file} (file_exists: " . file_exists($file) . ")");
 
 		// There must be a Email field in CSV file
 		/*if(!in_array('Email', $reader->getHeaders() ))
