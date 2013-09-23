@@ -37,7 +37,8 @@ class TargetController extends BaseController {
 		
 		else {
 			$target = new Target();
-			$target->importCSV(Input::get('name'), Input::file('mailing'));
+			//$target->importCSV(Input::get('name'), Input::file('mailing'));
+			Input::file('mailing')->move(Config::get('projeter.upload_path'), Input::file('mailing')->getClientOriginalName());
 
 			return View::make('marketing.target.index')
 				->with('success', true)
