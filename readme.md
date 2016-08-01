@@ -1,6 +1,10 @@
 # Projeter
 Project manager for recurring and usual bussiness processes
 
+## Demo
+
+![Projeter](http://i.imgur.com/C7VNImF.png)
+
 ## Dependencies
 * Laravel 4
 * [Beanstalkd](http://kr.github.io/beanstalkd/)
